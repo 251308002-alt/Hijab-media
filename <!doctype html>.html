@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="kk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Мәтін талдаушы</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202b2a;
+      --muted: #596966;
+      --paper: #f5f7f4;
+      --surface: #fff;
+      --line: #d7dfd9;
+      --green: #176b52;
+      --green-dark: #10513e;
+      --yellow: #ffed9b;
+      --yellow-line: #b48b00;
+      --red: #ffd2cc;
+      --red-line: #bd3829;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.55 Georgia, "Times New Roman", serif;
+    }
+
+    main {
+      width: min(940px, calc(100% - 32px));
+      margin: 40px auto;
+    }
+
+    h1, h2, button, label, th, .eyebrow {
+      font-family: "Trebuchet MS", Arial, sans-serif;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.12;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .intro {
+      max-width: 680px;
+      margin: 12px 0 28px;
+      color: var(--muted);
+    }
+
+    .editor {
+      padding: 22px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--green);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 220px;
+      padding: 14px;
+      border: 1px solid #aebbb2;
+      border-radius: 3px;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: 3px solid #a5d6c3;
+      outline-offset: 2px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    button {
+      padding: 11px 20px;
+      border: 0;
+      border-radius: 3px;
+      background: var(--green);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--green-dark); }
+
+    button:focus-visible {
+      outline: 3px solid #a5d6c3;
+      outline-offset: 3px;
+    }
+
+    .hint, .notice {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    #results { margin-top: 30px; }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 21px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      margin: 0 0 14px;
+      color: var(--muted);
+      font: 13px "Trebuchet MS", Arial, sans-serif;
+    }
+
+    .swatch {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      margin-right: 5px;
+      border: 1px solid;
+      vertical-align: -2px;
+    }
+
+    .swatch.yellow { background: var(--yellow); border-color: var(--yellow-line); }
+    .swatch.red { background: var(--red); border-color: var(--red-line); }
+
+    .preview {
+      min-height: 70px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    mark {
+      padding: 1px 3px;
+      border-radius: 2px;
+      color: var(--ink);
+    }
+
+    mark.flag-yellow {
+      background: var(--yellow);
+      box-shadow: inset 0 -2px var(--yellow-line);
+    }
+
+    mark.flag-red {
+      background: var(--red);
+      box-shadow: inset 0 -2px var(--red-line);
+    }
+
+    .table-wrap {
+      margin-top: 18px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf2ed;
+      font-size: 13px;
+    }
+
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .notice { margin-top: 12px; }
+
+    @media (max-width: 600px) {
+      main { margin: 24px auto; }
+      .editor { padding: 16px; }
+      .actions { align-items: flex-start; flex-direction: column; }
+      button { width: 100%; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Редакциялық көмекші</p>
+    <h1>Мәтін талдаушы</h1>
+    <p class="intro">
+      Мәтіндегі алдын ала белгіленген біржақты тіркестерді тауып,
+      бейтарап баламаларын ұсынады.
+    </p>
+
+    <section class="editor" aria-labelledby="input-label">
+      <label id="input-label" for="article">Мақала мәтіні</label>
+      <textarea id="article" placeholder="Мақала мәтінін осында енгізіңіз..."></textarea>
+      <div class="actions">
+        <button id="check-button" type="button">Тексеру</button>
+        <span class="hint">Тексеру браузер ішінде орындалады.</span>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="results" aria-labelledby="results-title" hidden>
+      <h2 id="results-title">Талдау нәтижесі</h2>
+      <div class="legend" aria-label="Бөлектеу белгілері">
+        <span><i class="swatch yellow"></i>Назар аударуды қажет ететін тіркес</span>
+        <span><i class="swatch red"></i>Стигматизациялауы мүмкін тіркес</span>
+      </div>
+      <div id="preview" class="preview"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Табылған тіркес</th>
+              <th scope="col">Бейтарап балама</th>
+              <th scope="col">Дереккөз</th>
+              <th scope="col">Саны</th>
+            </tr>
+          </thead>
+          <tbody id="findings"></tbody>
+        </table>
+      </div>
+      <p class="notice">
+        Баламалар мен дереккөздер тестілік сөздіктен алынған. Бұл құрал
+        редакциялық шешімнің немесе заңдық кеңестің орнына жүрмейді.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const dictionary = [
+      {
+        term: "радикалдар",
+        alternative: "дін ұстанушылар",
+        source: "Журналистердің әдеп кодексі",
+        severity: "red"
+      },
+      {
+        term: "жабынып алғандар",
+        alternative: "хиджаб киген оқушылар",
+        source: "Медиа-этика стандарттары",
+        severity: "yellow"
+      },
+      {
+        term: "хиджаб дауы",
+        alternative: "мектеп формасы төңірегіндегі пікітaс",
+        source: "ҚР Заңнамасы",
+        severity: "yellow"
+      }
+    ];
+
+    const articleInput = document.querySelector("#article");
+    const checkButton = document.querySelector("#check-button");
+    const status = document.querySelector("#status");
+    const results = document.querySelector("#results");
+    const preview = document.querySelector("#preview");
+    const findings = document.querySelector("#findings");
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[character]);
+    }
+
+    function makePattern() {
+      const alternatives = dictionary
+        .map(item => item.term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+        .sort((left, right) => right.length - left.length);
+
+      return new RegExp(
+        `(?<![\\p{L}\\p{N}_])(?:${alternatives.join("|")})(?![\\p{L}\\p{N}_])`,
+        "giu"
+      );
+    }
+
+    checkButton.addEventListener("click", () => {
+      const text = articleInput.value;
+
+      if (!text.trim()) {
+        results.hidden = true;
+        status.textContent = "Алдымен мақала мәтінін енгізіңіз.";
+        articleInput.focus();
+        return;
+      }
+
+      status.textContent = "";
+      const pattern = makePattern();
+      const counts = new Map(dictionary.map(item => [item.term, 0]));
+      const termLookup = new Map(
+        dictionary.map(item => [item.term.toLowerCase(), item])
+      );
+
+      for (const match of text.matchAll(pattern)) {
+        const item = termLookup.get(match[0].toLowerCase());
+        if (item) counts.set(item.term, counts.get(item.term) + 1);
+      }
+
+      pattern.lastIndex = 0;
+      preview.innerHTML = text.replace(pattern, match => {
+        const item = termLookup.get(match.toLowerCase());
+        const colorClass = item.severity === "red" ? "flag-red" : "flag-yellow";
+        return `<mark class="${colorClass}">${escapeHtml(match)}</mark>`;
+      });
+
+      const foundItems = dictionary.filter(item => counts.get(item.term) > 0);
+      findings.innerHTML = foundItems.map(item => `
+        <tr>
+          <td>${escapeHtml(item.term)}</td>
+          <td>${escapeHtml(item.alternative)}</td>
+          <td>${escapeHtml(item.source)}</td>
+          <td>${counts.get(item.term)}</td>
+        </tr>
+      `).join("");
+
+      if (foundItems.length) {
+        status.textContent = `${foundItems.length} түрлі тіркес табылды.`;
+      } else {
+        status.textContent = "Сөздіктегі тіркестер табылған жоқ.";
+      }
+
+      results.hidden = false;
+    });
+
+    articleInput.addEventListener("input", () => {
+      results.hidden = true;
+      status.textContent = "";
+    });
+  </script>
+</body>
+</html>
